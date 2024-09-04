@@ -1,0 +1,87 @@
+buildscript {
+    repositories {
+        maven {
+            credentials {
+                username mavenUsername
+                password mavenPassword
+            }
+            url mavenRepository
+        }
+    }
+    dependencies {
+        classpath 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+    }
+}
+
+//tag::exportGithubIssues[]
+task exportGithubIssues(
+        description: 'Exports all Github issues from a given search',
+        group: 'docToolchain'
+) {
+    doLast {
+        def configFile = new File(docDir, mainConfigFile)
+        def config = new ConfigSlurper().parse(configFile.text)
+        def authHeader
+
+        def user = config.github.user
+        def pass = config.github.password
+        def organization = config.github.organization
+        def repository = config.github.repository
+        def gitHubRoot = config.github.root
+        if (!pass) {
+            pass = System.console().readPassword("Github password for user '$user': ")
+        }
+        authHeader = "${user}:${pass}".bytes.encodeBase64().toString()
+
+        def stats = [:]
+        def gitHub = new groovyx.net.http.RESTClient(gitHubRoot)
+        gitHub.encoderRegistry = new groovyx.net.http.EncoderRegistry(charset: 'utf-8')
+        gitHub.handler.failure = { resp, data -> resp.setData(data); return resp }
+        def headers = [
+                'Authorization': "Basic " + authHeader,
+                'Content-Type' : 'application/json; charset=utf-8',
+                'User-Agent' : user
+        ]
+        def allIssues = new File(srcDir, 'src/allGitHubIssues.adoc')
+        allIssues.write("", 'utf-8')
+        def openIssues = new File(srcDir, 'src/openGitHubIssues.adoc')
+        openIssues.write("", 'utf-8')
+        def oiExist = false;
+        def closedIssues = new File(srcDir, 'src/closedGitHubIssues.adoc')
+        closedIssues.write("", 'utf-8')
+        def ciExist = false;
+        println "HHHHHHHHH"
+
+        gitHub.get(
+            path: "repos/${organization}/${repository}/issues",
+            query: ['state':'all','filter':'all','per_page':'100'],
+            headers: headers
+        ).data.each { it2 ->
+            if (it2.html_url && !it2.html_url.contains("/pull/")) {
+                if ("open".equals(it2.state)) {
+                    openIssues.append("| ${'https://www.github.com/'+organization+'/'+repository+'/issues/' + it2.number}[${it2.number}]", 'utf-8')
+                    openIssues.append(it2.milestone == null ? "| n/a": "| ${it2.milestone.title}", 'utf-8')
+                    openIssues.append("| ${it2.title.take(120)}", 'utf-8')
+                    oiExist = true
+                } else {
+                    closedIssues.append("| ${'https://www.github.com/'+organization+'/'+repository+'/issues/' + it2.number}[${it2.number}]", 'utf-8')
+                    closedIssues.append("| ${it2.state}", 'utf-8')
+                    closedIssues.append(it2.milestone == null ? "| n/a" : "| ${it2.milestone.title}", 'utf-8')
+                    closedIssues.append("| ${it2.title.take(120)}", 'utf-8')
+                    ciExist = true
+                }
+                allIssues.append("| ${'https://www.github.com/'+organization+'/'+repository+'/issues/' + it2.number}[${it2.number}]", 'utf-8')
+                allIssues.append("| ${it2.state}", 'utf-8')
+                allIssues.append(it2.milestone == null ? "| n/a" : "| ${it2.milestone.title}", 'utf-8')
+                allIssues.append("| ${it2.title.take(120)}", 'utf-8')
+            }
+        }
+        if (!oiExist) {
+            openIssues.append("| | |", 'utf-8')
+        }
+        if (!ciExist) {
+            openIssues.append("| | |", 'utf-8')
+        }
+    }
+}
+//end::exportGithubIssues[]
