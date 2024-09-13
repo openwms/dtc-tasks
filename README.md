@@ -110,10 +110,41 @@ $ ./dtcw convertToMediawiki
 ````
 to convert all Docbook files in `${targetDir}/docbook` into Mediawiki files in `${targetDir}/mw`.
 
+# Public to Mediawiki
+Previously generated Mediawiki documents can be uploaded to a Mediawiki server using the existing Mediawiki web api. The gradle task to do
+so, wraps a [python script](https://github.com/SoerenKemmann/mediawiki-utils) (credits to [SoerenKemmann](https://github.com/SoerenKemmann))
+that does the heavy work.
+
+![mediawikiserver][6]
+
+## Task Requirements
+- Python3 must be installed on the machine that is executing the task
+- [Python scripts](https://github.com/SoerenKemmann/mediawiki-utils) must be downloaded and placed under `${docDir}/bin`
+
+## Configure & Run
+Beside the registration of the task in the `customTasks` section, additional configuration is required to run the task:
+````
+mediawiki = [:]
+mediawiki.with {
+    api = "<your mediawiki server>/api.php"
+    user = "${System.getenv('MEDIAWIKI_USER')}"
+    password = "${System.getenv('MEDIAWIKI_PASSWORD')}"
+    extension = ".mw"
+    context = "<Name of the context page to store all generated documentation>"
+    page = "<Name of the page where the documentation shall be placed in>"
+}
+````
+
+````
+$ ./dtcw publishToMediawiki
+````
+to upload all previously generated files in `${targetDir}/mw` to the Mediawiki server.
+
 [0]: res/images/dtc-pipeline.drawio.png
 [1]: res/images/screenshot.png
 [2]: res/images/asciidoctor.png
 [3]: res/images/docbook.png
 [4]: res/images/markdown.png
 [5]: res/images/mediawiki.png
+[6]: res/images/mediawikiserver.png
 

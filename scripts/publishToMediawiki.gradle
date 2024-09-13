@@ -1,0 +1,29 @@
+//tag::publishToMediawiki[]
+task publishToMediawiki(
+        description: 'Publish contents as mediawiki to Mediawiki',
+        group: 'docToolchain'
+) {
+
+    doLast {
+        def configFile = new File(docDir, mainConfigFile)
+        def config = new ConfigSlurper().parse(configFile.text)
+
+        Map connParams = [
+                api: config.mediawiki.api,
+                user: config.mediawiki.user,
+                password: config.mediawiki.password
+        ]
+
+        Map params = [
+                extension: config.mediawiki.extension,
+                context: config.mediawiki.context,
+                page: config.mediawiki.page
+        ]
+
+        File sourceFolder = new File("${targetDir}/mw/src")
+        exec {
+            commandLine 'python3', "${docDir}/bin/upload.py", '-v', "-u", "${connParams.api}", "-b","${sourceFolder}", "-e", "${params.extension}", "-c", "${params.context}", "-a", "${params.page}", "-l", "${connParams.user}", "-p", "${connParams.password}"
+        }
+    }
+}
+//end::publishToMediawiki[]
