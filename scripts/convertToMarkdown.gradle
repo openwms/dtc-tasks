@@ -1,0 +1,27 @@
+import static groovy.io.FileType.*
+import static groovy.io.FileVisitResult.*
+
+//tag::convertToMarkdown[]
+task convertToMarkdown (
+        group: 'docToolchain',
+        description: 'converts file to .md via pandoc. Needs pandoc installed.',
+) {
+    doLast {
+        File sourceFolder = new File("${targetDir}/docbook/src")
+        sourceFolder.traverse(
+                type: FILES,
+        ) {
+            def sourcePath = it.path.replace('.adoc', '.xml')
+            def targetFile = sourcePath.replace('.xml', '.md').replace('docbook/src/', 'md/src/')
+            new File("$targetFile").getParentFile().getAbsoluteFile().mkdirs()
+            exec {
+                commandLine 'pandoc', '-f', 'docbook', "-t","markdown_mmd", "-o","${targetFile}", "${sourcePath}"
+            }
+        }
+    }
+}
+//end::convertToMarkdown[]
+
+project.afterEvaluate {
+    project.tasks.convertToMarkdown.dependsOn convertToDocBook
+}

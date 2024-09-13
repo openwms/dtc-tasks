@@ -2,6 +2,10 @@
 This repository is a collection of Groovy scripts and Gradle tasks that are used with [docToolchain](https://github.com/docToolchain/docToolchain)
 to import (_export_ Task) data from 3rd party datasource and publish transformed or generated content to data sinks.
 
+A combination of all task steps could look like
+![pipeline][0]
+
+
 # Requirements
 Tested with:
 - dtcw 0.51
@@ -53,7 +57,7 @@ to generate the snippets.
 # Docbook Converter
 The Gradle task `convertToDocBook` is used to convert asciidoctor files into OASIS standardized Docbook (version 5.0) format. The task
 expects source files in the DocToolchain `${srcDir}` folder (usually `./src`) and converts them into Docbook files, stored in the
-DocToolchain `${targetDir}` folder (usually `./build`}).
+DocToolchain `${targetDir}/docbook` folder (usually `./build/docbook`}).
 
 | Asciidoctor (Source) | Docbook (Target) |
 |----------------------|------------------|
@@ -67,9 +71,30 @@ Beside the registration of the task in the `customTasks` section no additional c
 ````
 $ ./dtcw convertToDocBook
 ````
-to convert all asciidoctor files in `${srcDir}` into Docbook files in `${targetDir}`.
+to convert all asciidoctor files in `${srcDir}` into Docbook files in `${targetDir}/docbook`.
 
+# Markdown Converter
+Existing Docbook files can be converted into various formats, one of them is [Markdown](https://daringfireball.net/projects/markdown) that
+is used by a lot of wikis and online authoring tools. To achieve the conversion, the converter uses [pandoc](https://pandoc.org) to convert
+all files in `${targetDir}/docbook` to `${targetDir}/md`.
+
+| Docbook (Source) | Markdown (Target) |
+|------------------|-------------------|
+| ![docbook][3]    | ![markdown][4]    |
+
+Notice: When images in source documents come as file references, the output Markdown file will also refer to a file. If the image is 
+embedded, then it is also embedded in Markdown format.
+
+## Configure & Run
+Beside the registration of the task in the `customTasks` section no additional configuration is required to run the task:
+````
+$ ./dtcw convertToMarkdown
+````
+to convert all Docbook files in `${targetDir}/docbook` into Markdown files in `${targetDir}/md`.
+
+[0]: res/images/dtc-pipeline.drawio.png
 [1]: res/images/screenshot.png
 [2]: res/images/asciidoctor.png
 [3]: res/images/docbook.png
+[4]: res/images/markdown.png
 
