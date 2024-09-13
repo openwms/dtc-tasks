@@ -1,0 +1,27 @@
+import static groovy.io.FileType.*
+import static groovy.io.FileVisitResult.*
+
+//tag::convertToMediawiki[]
+task convertToMediawiki (
+        group: 'docToolchain',
+        description: 'converts file to .mw via pandoc. Needs pandoc installed.',
+) {
+    doLast {
+        File sourceFolder = new File("${targetDir}/docbook/src")
+        sourceFolder.traverse(
+                type: FILES,
+        ) {
+            def sourcePath = it.path.replace('.adoc', '.xml')
+            def targetFile = sourcePath.replace('.xml', '.mw').replace('docbook/src/', 'mw/src/')
+            new File("$targetFile").getParentFile().getAbsoluteFile().mkdirs()
+            exec {
+                commandLine 'pandoc', '-f', 'docbook', "-t","mediawiki", "-o","${targetFile}", "${sourcePath}"
+            }
+        }
+    }
+}
+//end::convertToMediawiki[]
+
+project.afterEvaluate {
+    project.tasks.convertToMarkdown.dependsOn convertToDocBook
+}

@@ -92,9 +92,28 @@ $ ./dtcw convertToMarkdown
 ````
 to convert all Docbook files in `${targetDir}/docbook` into Markdown files in `${targetDir}/md`.
 
+# Mediawiki Converter
+Existing Docbook files can also be converted into [Mediawiki format](https://www.mediawiki.org). The converter is very similar to the
+[Markdown Converter][] and uses [pandoc](https://pandoc.org) to convert all files in `${targetDir}/docbook` to `${targetDir}/mw`.
+
+| Docbook (Source) | Mediawiki (Target) |
+|------------------|--------------------|
+| ![docbook][3]    | ![mediawiki][5]    |
+
+Notice: When images in source documents come as file references, the output Mediawiki file will also refer to a file. If the image is
+embedded, then it is also embedded in Mediawiki format.
+
+## Configure & Run
+Beside the registration of the task in the `customTasks` section no additional configuration is required to run the task:
+````
+$ ./dtcw convertToMediawiki
+````
+to convert all Docbook files in `${targetDir}/docbook` into Mediawiki files in `${targetDir}/mw`.
+
 [0]: res/images/dtc-pipeline.drawio.png
 [1]: res/images/screenshot.png
 [2]: res/images/asciidoctor.png
 [3]: res/images/docbook.png
 [4]: res/images/markdown.png
+[5]: res/images/mediawiki.png
 
