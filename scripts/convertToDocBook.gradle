@@ -1,0 +1,99 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            credentials {
+                username mavenUsername
+                password mavenPassword
+            }
+            url mavenRepository
+        }
+    }
+    configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.ysb33r.gradle' && details.requested.name == 'grolifant' && details.requested.version in ['0.12', '0.12.1']) {
+                details.useVersion '0.16.1'
+                details.because 'jcenter redirect'
+            }
+            if (details.requested.group == 'org.codehaus.groovy.modules.http-builder' && details.requested.name == 'http-builder' && details.requested.version == '0.7.2') {
+                details.useVersion '0.7.1'
+                details.because 'jcenter redirect'
+            }
+            if (details.requested.group == 'com.burgstaller' && details.requested.name == 'okhttp-digest') {
+                details.useTarget group: 'io.github.rburgst', name: details.requested.name, version: '1.21'
+            }
+        }
+    }
+    dependencies {
+        classpath (libs.asciidoctor)
+        classpath (libs.asciidoctor.pdf)
+        classpath (libs.asciidoctor.gems)
+        classpath (libs.asciidoctor.slides)
+        if (file("libs/org/docToolchain/core-${project.properties.dtc_version}.jar").exists()) {
+            classpath files("libs/org/docToolchain/core-${project.properties.dtc_version}.jar")
+        } else {
+            classpath("org.docToolchain:core")
+        }
+    }
+}
+
+import org.asciidoctor.gradle.jvm.*
+import org.asciidoctor.gradle.jvm.AsciidoctorTask
+
+import static groovy.io.FileType.*
+import static groovy.io.FileVisitResult.*
+
+if (docDir.startsWith('.')) {
+    docDir = new File(projectDir, docDir).canonicalPath
+}
+
+//tag::convertToDocBook[]
+task convertToDocBook (
+        type: AsciidoctorTask,
+        group: 'docToolchain',
+        description: 'converts asciidoc files to docbook via pandoc. Needs pandoc installed.'
+){
+    def sourceFilesDOCBOOK = findSourceFilesByType(['docbook'])
+
+    sourceFilesDOCBOOK.each {
+        File useFile = new File(srcDir, it.file)
+        if (!useFile.exists()) {
+            throw new Exception ("""
+            The file $useFile in DOCBOOK config does not exist!
+            Please check the configuration 'inputFiles' in $mainConfigFile.""")
+        }
+    }
+
+    outputOptions {
+        backends = ['docbook']
+    }
+
+    outputDir = file(targetDir+'/docbook/')
+
+    doFirst {
+        if (sourceFilesDOCBOOK.size()==0) {
+            throw new Exception ("""
+            >> No source files defined for type of '[docbook]'.
+            >> Please specify at least one inputFile in your docToolchainConfig.groovy
+            """)
+        }
+    }
+}
+//end::convertToDocBook[]
+
+project.afterEvaluate {
+    project.tasks.convertToDocBook.dependsOn verifyPandoc
+}
+
+def findSourceFilesByType(types) {
+    List<Object> sourceFilesForTask = []
+    if (sourceFiles) {
+        println sourceFiles
+        types.each { format ->
+            sourceFilesForTask << sourceFiles.findAll {
+                format in it.formats
+            }
+        }
+    }
+    return sourceFilesForTask.flatten()
+}
