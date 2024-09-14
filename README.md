@@ -110,10 +110,10 @@ $ ./dtcw convertToMediawiki
 ````
 to convert all Docbook files in `${targetDir}/docbook` into Mediawiki files in `${targetDir}/mw`.
 
-# Public to Mediawiki
+# Publish to Mediawiki
 Previously generated Mediawiki documents can be uploaded to a Mediawiki server using the existing Mediawiki web api. The gradle task to do
 so, wraps a [python script](https://github.com/SoerenKemmann/mediawiki-utils) (credits to [SoerenKemmann](https://github.com/SoerenKemmann))
-that does the heavy work.
+that does the heavy lifting.
 
 ![mediawikiserver][6]
 
