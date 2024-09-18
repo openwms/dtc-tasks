@@ -42,15 +42,16 @@ task exportGithubIssues(
                 'Content-Type' : 'application/json; charset=utf-8',
                 'User-Agent' : user
         ]
-        def allIssues = new File(srcDir, 'src/allGitHubIssues.adoc')
+        def f = (new File("${srcDir}/snippets"))
+        f.mkdirs()
+        def allIssues = new File(srcDir, 'snippets/allGitHubIssues.adoc')
         allIssues.write("", 'utf-8')
-        def openIssues = new File(srcDir, 'src/openGitHubIssues.adoc')
+        def openIssues = new File(srcDir, 'snippets/openGitHubIssues.adoc')
         openIssues.write("", 'utf-8')
         def oiExist = false;
-        def closedIssues = new File(srcDir, 'src/closedGitHubIssues.adoc')
+        def closedIssues = new File(srcDir, 'snippets/closedGitHubIssues.adoc')
         closedIssues.write("", 'utf-8')
         def ciExist = false;
-        println "HHHHHHHHH"
 
         gitHub.get(
             path: "repos/${organization}/${repository}/issues",
