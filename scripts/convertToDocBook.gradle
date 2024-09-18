@@ -37,6 +37,7 @@ buildscript {
     }
 }
 
+
 import org.asciidoctor.gradle.jvm.*
 import org.asciidoctor.gradle.jvm.AsciidoctorTask
 
@@ -71,11 +72,21 @@ task convertToDocBook (
     outputDir = file(targetDir+'/docbook/')
 
     doFirst {
-        if (sourceFilesDOCBOOK.size()==0) {
+        if (sourceFilesDOCBOOK.size() == 0) {
             throw new Exception ("""
             >> No source files defined for type of '[docbook]'.
             >> Please specify at least one inputFile in your docToolchainConfig.groovy
             """)
+        }
+    }
+
+    doLast {
+        println srcDir
+        File sourceFolder = new File("${srcDir}")
+        sourceFolder.traverse(type: FILES) { file ->
+            if (file.name ==~ '^.*[.](png|jpg|jpeg|svg)$') {
+                println file.canonicalPath
+            }
         }
     }
 }
@@ -88,7 +99,6 @@ project.afterEvaluate {
 def findSourceFilesByType(types) {
     List<Object> sourceFilesForTask = []
     if (sourceFiles) {
-        println sourceFiles
         types.each { format ->
             sourceFilesForTask << sourceFiles.findAll {
                 format in it.formats
