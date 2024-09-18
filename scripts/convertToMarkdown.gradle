@@ -7,15 +7,25 @@ task convertToMarkdown (
         description: 'converts file to .md via pandoc. Needs pandoc installed.',
 ) {
     doLast {
-        File sourceFolder = new File("${targetDir}/docbook/src")
+        File sourceFolder = new File("${targetDir}/docbook")
         sourceFolder.traverse(
                 type: FILES,
         ) {
-            def sourcePath = it.path.replace('.adoc', '.xml')
-            def targetFile = sourcePath.replace('.xml', '.md').replace('docbook/src/', 'md/src/')
-            new File("$targetFile").getParentFile().getAbsoluteFile().mkdirs()
-            exec {
-                commandLine 'pandoc', '-f', 'docbook', "-t","markdown_mmd", "-o","${targetFile}", "${sourcePath}"
+            if (it.name ==~ '^.*[.](xml)$') {
+                def sourcePath = it.path.replace('.adoc', '.xml')
+                def targetFile = sourcePath.replace('.xml', '.md').replace('docbook/', 'md/')
+                new File("$targetFile").getParentFile().getAbsoluteFile().mkdirs()
+                exec {
+                    commandLine 'pandoc', '-f', 'docbook', "-t","markdown_mmd", "-o","${targetFile}", "${sourcePath}"
+                }
+            } else {
+                File srcFile = new File(it.canonicalPath)
+                File target = new File(it.parent.replace('/docbook/', '/md/'))
+                println "Copying resource from ${it.canonicalPath} to ${target.canonicalPath}"
+                copy {
+                    from srcFile
+                    into target
+                }
             }
         }
     }
