@@ -16,13 +16,14 @@ task publishToMediawiki(
 
         Map params = [
                 extension: config.mediawiki.extension,
+                imageExtensions: config.mediawiki.imageExtensions,
                 context: config.mediawiki.context,
                 page: config.mediawiki.page
         ]
 
-        File sourceFolder = new File("${targetDir}/mw/src")
+        File sourceFolder = new File("${targetDir}/mw")
         exec {
-            commandLine 'python3', "${docDir}/bin/upload.py", '-v', "-u", "${connParams.api}", "-b","${sourceFolder}", "-e", "${params.extension}", "-c", "${params.context}", "-a", "${params.page}", "-l", "${connParams.user}", "-p", "${connParams.password}"
+            commandLine 'python3', "${docDir}/bin/uploadAll.py", '-v', "-u", "${connParams.api}", "-b", "${sourceFolder}", "-e", "${params.extension}", "-i", "${params.imageExtensions}", "-c", "${params.context}", "-a", "${params.page}", "-l", "${connParams.user}", "-p", "${connParams.password}"
         }
     }
 }
